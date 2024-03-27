@@ -1,8 +1,16 @@
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
 using namespace std;
+
+
+// default precision if no precision argument is provided;
+int defaultPrecision = 6;
+
+// This function sets the precision  of the answer.
+int getPrecision(string s);
 
 // This function finds the last index of the current math expression
 int expressionLastIndexFinder(string s);
@@ -24,8 +32,20 @@ double calculate(string s, bool shouldFirstNumberBeNegative);
 
 ////////// main function///////////////
 int main(int argc, char *argv[]) {
+  if (argc == 3) {
+    string mathExpression = argv[1];
+    string precisionArgument = argv[2];
+    cout << setprecision(getPrecision(precisionArgument));
+    cout << "Answer: " << calculate(mathExpression, false) << endl;
+  } else if (argc == 2) {
+    cout << setprecision(defaultPrecision);
+    string mathExpression = argv[1];
 
-  cout << "Answer is: " << calculate(argv[1], false) << endl;
+    cout << "Answer: " << calculate(mathExpression, false) << endl;
+  } else {
+    throw invalid_argument(
+        "You need to provide at least a valid math expression");
+  }
   return 0;
 }
 ///////////////////////////////////////
@@ -225,7 +245,24 @@ bool isInt(string c) {
   try {
     int var = stoi(c);
     return true;
-  } catch (const std::invalid_argument &) {
+  } catch (const invalid_argument &) {
     return false;
+  }
+}
+
+
+int getPrecision(string s) {
+  try {
+    int precision = stoi(s);
+    if (precision <= 15 && precision >= 0) {
+      return precision;
+    } else {
+      cout << "precision shouldn't exceed 15, using the default precision: 6"
+           << endl;
+      return defaultPrecision;
+    }
+  } catch (const invalid_argument &) {
+    cout << "precison should be a positive int between 1-15" << endl;
+    return defaultPrecision;
   }
 }
