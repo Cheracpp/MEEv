@@ -1,81 +1,28 @@
+#include "Calculator.h"
+#include "Utility.h"
 #include <cmath>
-#include <iomanip>
 #include <iostream>
 #include <stdexcept>
-#include <string>
 
 using namespace std;
 
-// default precision if no precision argument is provided;
-int defaultPrecision = 6;
+Calculator::Calculator(int DefaultPrecision)
+    : defaultPrecision{DefaultPrecision} {}
 
-// This function sets the precision of the answer, it prioritizes the
-// precision set by the user if there was any, or it uses the defaultPrecision.
-int getPrecision(string s);
-
-// This function finds the last index of the current math expression
-int expressionLastIndexFinder(string s);
-
-// This function finds the amount of characters left before The closing
-// parenthesis
-int closingParenthesisFinder(string s);
-
-// This function finds the  amount of characters left before the opening
-// parenthesis
-int openingParenthesisFinder(string s);
-
-// This function checks if a character is an int by making use of "stoi()"
-bool isInt(string c);
-
-// This function uses recursion to calculate a math expression, if
-// successful it returns the answer, if not it throws an invalid argument
-// exception.
-// Inputs: s is a string that represents the possible math
-// expression.
-// shouldFirstNumberBeNegative is a boolean that is false by default
-// and in most function calls, except when we try to perform a (-)
-// operation.
-double calculate(string s, bool shouldFirstNumberBeNegative);
-
-////////// main function///////////////
-int main(int argc, char *argv[]) {
-  if (argc == 3) {
-    string mathExpression = argv[1];
-    string precisionArgument = argv[2];
-    if (mathExpression.length() == 0) {
-      throw invalid_argument(
-          "Invalid expression: The expression cannot be empty. Please provide "
-          "a valid mathematical expression.");
-    }
-    cout << setprecision(getPrecision(precisionArgument));
-    cout << "Answer: " << calculate(mathExpression, false) << endl;
-  } else if (argc == 2) {
-    cout << setprecision(defaultPrecision);
-    string mathExpression = argv[1];
-
-    cout << "Answer: " << calculate(mathExpression, false) << endl;
-  } else {
-    throw invalid_argument(
-        "You need to provide at least a valid math expression");
-  }
-  return 0;
-}
-///////////////////////////////////////
-
-double calculate(string s, bool shouldFirstNumberBeNegative) {
+double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
   double answer = 0;
   string bufferString = ""; // holds a soon-to-be int or a
                             // possible soon-to-be double
   bool isCharacterValid =
       false; // used to mark a string of characters valid up to '('.
   int emptyCharactersCount = 0; // used to count empty characters.
-  bool isFirstDecimal = true; // used to allow only one decimal per double;
+  bool isFirstDecimal = true;   // used to allow only one decimal per double;
   for (size_t i = 0; i < s.length(); i++) {
     switch (s[i]) {
 
     case ' ':
-        emptyCharactersCount++;
-        continue;
+      emptyCharactersCount++;
+      continue;
     case '+': {
       if (i == (s.length() - 1) || i == 0 || (i - emptyCharactersCount) == 0) {
         throw invalid_argument("Invalid expression: addition operator '+' "
@@ -140,16 +87,16 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
       }
       int j = 0;
       string character = s.substr(i + 1, 1);
-      if (isInt(character)) {
-        j = expressionLastIndexFinder(s.substr(i + 1));
+      if (Utility::isInt(character)) {
+        j = Utility::expressionLastIndexFinder(s.substr(i + 1));
       } else if (character == "-") {
-        j = expressionLastIndexFinder(s.substr(i + 2)) + 1;
+        j = Utility::expressionLastIndexFinder(s.substr(i + 2)) + 1;
       } else {
-        j = closingParenthesisFinder(s.substr(i + 1)) + 2;
+        j = Utility::closingParenthesisFinder(s.substr(i + 1)) + 2;
         if ((i + j + 1) < s.length()) {
           char possibleCaretSymbol = s[i + j + 1];
           if (possibleCaretSymbol == '^') {
-            j += expressionLastIndexFinder(s.substr(i + j + 1));
+            j += Utility::expressionLastIndexFinder(s.substr(i + j + 1));
           }
         }
       }
@@ -182,16 +129,16 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
       }
       int j = 0;
       string character = s.substr(i + 1, 1);
-      if (isInt(character)) {
-        j = expressionLastIndexFinder(s.substr(i + 1));
+      if (Utility::isInt(character)) {
+        j = Utility::expressionLastIndexFinder(s.substr(i + 1));
       } else if (character == "-") {
-        j = expressionLastIndexFinder(s.substr(i + 2)) + 1;
+        j = Utility::expressionLastIndexFinder(s.substr(i + 2)) + 1;
       } else {
-        j = closingParenthesisFinder(s.substr(i + 1)) + 2;
+        j = Utility::closingParenthesisFinder(s.substr(i + 1)) + 2;
         if ((i + j + 1) < s.length()) {
           char possibleCaretSymbol = s[i + j + 1];
           if (possibleCaretSymbol == '^') {
-            j += expressionLastIndexFinder(s.substr(i + j + 1));
+            j += Utility::expressionLastIndexFinder(s.substr(i + j + 1));
           }
         }
       }
@@ -225,12 +172,12 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
       }
       int j = 0;
       string character = s.substr(i + 1, 1);
-      if (isInt(character)) {
-        j = expressionLastIndexFinder(s.substr(i + 1));
+      if (Utility::isInt(character)) {
+        j = Utility::expressionLastIndexFinder(s.substr(i + 1));
       } else if (character == "-") {
-        j = expressionLastIndexFinder(s.substr(i + 2)) + 1;
+        j = Utility::expressionLastIndexFinder(s.substr(i + 2)) + 1;
       } else {
-        j = closingParenthesisFinder(s.substr(i + 1)) + 2;
+        j = Utility::closingParenthesisFinder(s.substr(i + 1)) + 2;
       }
       if (shouldFirstNumberBeNegative) {
         answer *= -1;
@@ -263,7 +210,7 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
             "'(-' "
             "is valid.");
       }
-      int k = closingParenthesisFinder(s.substr(i));
+      int k = Utility::closingParenthesisFinder(s.substr(i));
       if (k == 0) {
         throw invalid_argument("Invalid expression: Empty parentheses '()' are "
                                "not allowed. Please include a valid expression "
@@ -335,7 +282,7 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
           i++;
         }
         string possibleInt = s.substr(i, 1);
-        if (isInt(possibleInt)) {
+        if (Utility::isInt(possibleInt)) {
           throw invalid_argument(
               "Invalid expression: Ambiguous multiplication detected. Please "
               "explicitly state multiplication with an asterisk '*' between "
@@ -361,7 +308,7 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
     }
     default: {
       string character = s.substr(i, 1);
-      if (isInt(character)) {
+      if (Utility::isInt(character)) {
         bufferString += character;
         answer = stod(bufferString);
       } else if (character == ".") {
@@ -373,7 +320,7 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
                 "the beginning or the end of the expression.");
           }
           string nextChar = s.substr(i - 1, 3);
-          if (!isInt(nextChar)) {
+          if (!Utility::isInt(nextChar)) {
             throw invalid_argument(
                 "Invalid expression: Decimal points must be preceded and "
                 "followed by digits. Ensure that each decimal is part of a "
@@ -390,7 +337,7 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
               "valid");
         }
       } else {
-        int k = openingParenthesisFinder(s.substr(i));
+        int k = Utility::openingParenthesisFinder(s.substr(i));
         if (k != 3 && k != 4 && isCharacterValid == false) {
           throw invalid_argument(
               "Invalid expression: Unrecognized characters detected. Please "
@@ -408,88 +355,29 @@ double calculate(string s, bool shouldFirstNumberBeNegative) {
   }
   if (emptyCharactersCount == s.length()) {
     throw invalid_argument(
-        "Invalid expression: The expression cannot be empty, incomplete, or contain only "
+        "Invalid expression: The expression cannot be empty, incomplete, or "
+        "contain only "
         "spaces. Please provide a valid mathematical expression.");
   }
   return answer;
 }
 
-int expressionLastIndexFinder(string s) {
-  int index = 0;
-  for (char c : s) {
-    if (c == '+' || c == '-' || c == '*' || c == '/') {
-      return index;
-    } else {
-      index++;
-    }
-  }
-  return s.length();
-}
-
-int closingParenthesisFinder(string s) {
-  bool areWeInsideParentheses = false;
-  int count = 0;
-  int index = 0;
-  for (char c : s) {
-    if (c == '(') {
-      areWeInsideParentheses = true;
-      count--;
-    } else if (c == ')') {
-      count++;
-    }
-    if ((count == 0) && (areWeInsideParentheses == true)) {
-      break;
-    }
-    index++;
-  }
-  if (count != 0) {
-    throw invalid_argument(
-        "Invalid expression: Every opening parenthesis '(' must be paired "
-        "with "
-        "a corresponding closing parenthesis ')'. Please ensure that all "
-        "parentheses are properly closed and matched");
-  }
-  return index - 1;
-}
-
-bool isInt(string c) {
-  try {
-    int var = stoi(c);
-    return true;
-  } catch (const invalid_argument &) {
-    return false;
-  }
-}
-
-int getPrecision(string s) {
+int Calculator::setPrecision(string s) {
   try {
     int precision = stoi(s);
     if (precision <= 15 && precision >= 0) {
       return precision;
     } else {
-      cout << "precision shouldn't exceed 15, using the default precision: 6"
-           << endl;
+      cout << "precision shouldn't exceed 15, using the default precision: "
+           << defaultPrecision << endl;
       return defaultPrecision;
     }
   } catch (const invalid_argument &) {
     cout << "precison should be a positive int between 1-15, using the default "
-            "precision: 6"
-         << endl;
+            "precision: "
+         << defaultPrecision << endl;
     return defaultPrecision;
   }
 }
 
-int openingParenthesisFinder(string s) {
-  int count = 0;
-  for (char c : s) {
-    if (c == '(') {
-      return count;
-    } else {
-      count++;
-      if (count > 4) {
-        return count;
-      }
-    }
-  }
-  return 100;
-}
+int Calculator::getPrecision() { return defaultPrecision; }
