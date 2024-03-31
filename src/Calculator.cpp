@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-
+#include <string>
 using namespace std;
 
 Calculator::Calculator(int DefaultPrecision)
@@ -63,11 +63,18 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
       return answer;
     }
     case '*': {
-      if (i == (s.length() - 1) || i == 0 || (i - emptyCharactersCount) == 0) {
+      // find the next non-space char
+      int k = 0;
+      if (i < s.length() - 1) {
+        k = Utility::firstCharacterIndexFinder(s.substr(i + 1));
+      }
+      if ((i + k) == (s.length() - 1) || i == 0 ||
+          (i - emptyCharactersCount) == 0) {
         throw invalid_argument("Invalid expression: multiplication operator "
                                "'*' cannot be at the beginning, end or "
                                "immediately before a ')'.");
       }
+      i = i + k;
       char nextChar = s[i + 1];
       if (nextChar == '+' || nextChar == '*' || nextChar == '/' ||
           nextChar == '^') {
@@ -85,32 +92,25 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
         answer *= -1;
         shouldFirstNumberBeNegative = false;
       }
-      int j = 0;
-      string character = s.substr(i + 1, 1);
-      if (Utility::isInt(character)) {
-        j = Utility::expressionLastIndexFinder(s.substr(i + 1));
-      } else if (character == "-") {
-        j = Utility::expressionLastIndexFinder(s.substr(i + 2)) + 1;
-      } else {
-        j = Utility::closingParenthesisFinder(s.substr(i + 1)) + 2;
-        if ((i + j + 1) < s.length()) {
-          char possibleCaretSymbol = s[i + j + 1];
-          if (possibleCaretSymbol == '^') {
-            j += Utility::expressionLastIndexFinder(s.substr(i + j + 1));
-          }
-        }
-      }
+      int j = Utility::findLastIndexExpression(s.substr(i+1));
       double answerButWithConnections = calculate(s.substr(i + 1, j), false);
       i = i + j;
       answer *= answerButWithConnections;
       break;
     }
     case '/': {
-      if (i == (s.length() - 1) || i == 0 || (i - emptyCharactersCount) == 0) {
-        throw invalid_argument("Invalid expression: Division operator '/' "
-                               "cannot be at the beginning, end or "
+      // find the next non-space char
+      int k = 0;
+      if (i < s.length() - 1) {
+        k = Utility::firstCharacterIndexFinder(s.substr(i + 1));
+      }
+      if ((i + k) == (s.length() - 1) || i == 0 ||
+          (i - emptyCharactersCount) == 0) {
+        throw invalid_argument("Invalid expression: division operator "
+                               "'/' cannot be at the beginning, end or "
                                "immediately before a ')'.");
       }
+      i += k;
       char nextChar = s[i + 1];
       if (nextChar == '+' || nextChar == '*' || nextChar == '/' ||
           nextChar == '^') {
@@ -127,21 +127,7 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
         answer *= -1;
         shouldFirstNumberBeNegative = false;
       }
-      int j = 0;
-      string character = s.substr(i + 1, 1);
-      if (Utility::isInt(character)) {
-        j = Utility::expressionLastIndexFinder(s.substr(i + 1));
-      } else if (character == "-") {
-        j = Utility::expressionLastIndexFinder(s.substr(i + 2)) + 1;
-      } else {
-        j = Utility::closingParenthesisFinder(s.substr(i + 1)) + 2;
-        if ((i + j + 1) < s.length()) {
-          char possibleCaretSymbol = s[i + j + 1];
-          if (possibleCaretSymbol == '^') {
-            j += Utility::expressionLastIndexFinder(s.substr(i + j + 1));
-          }
-        }
-      }
+      int j = Utility::findLastIndexExpression(s.substr(i+1));
       double answerButWithConnections = calculate(s.substr(i + 1, j), false);
       if (answerButWithConnections == 0) {
         throw invalid_argument(
@@ -153,11 +139,18 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
       break;
     }
     case '^': {
-      if (i == (s.length() - 1) || i == 0 || (i - emptyCharactersCount) == 0) {
-        throw invalid_argument("invalid expression: The exponent operator '^' "
-                               "cannot be at the beginning, end or "
+      // find the next non-space char
+      int k = 0;
+      if (i < s.length() - 1) {
+        k = Utility::firstCharacterIndexFinder(s.substr(i + 1));
+      }
+      if ((i + k) == (s.length() - 1) || i == 0 ||
+          (i - emptyCharactersCount) == 0) {
+        throw invalid_argument("Invalid expression: exponent operator "
+                               "'^' cannot be at the beginning, end or "
                                "immediately before a ')'.");
       }
+      i = i + k;
       char nextChar = s[i + 1];
       if (nextChar == '+' || nextChar == '*' || nextChar == '/' ||
           nextChar == '^') {
@@ -170,19 +163,11 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
             "'^*' is invalid, but '^-' to indicate a negative exponent is "
             "valid.");
       }
-      int j = 0;
-      string character = s.substr(i + 1, 1);
-      if (Utility::isInt(character)) {
-        j = Utility::expressionLastIndexFinder(s.substr(i + 1));
-      } else if (character == "-") {
-        j = Utility::expressionLastIndexFinder(s.substr(i + 2)) + 1;
-      } else {
-        j = Utility::closingParenthesisFinder(s.substr(i + 1)) + 2;
-      }
       if (shouldFirstNumberBeNegative) {
         answer *= -1;
         shouldFirstNumberBeNegative = false;
       }
+      int j = Utility::findLastIndexExpression(s.substr(i+1));
       double exponent = calculate(s.substr(i + 1, j), false);
       if (answer == 0 && exponent < 0)
         throw invalid_argument(
@@ -277,12 +262,9 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
       }
       i = i + k + 1;
       if (i < (s.length() - 1)) {
-        i++;
-        while (s[i] == ' ') {
-          i++;
-        }
-        string possibleInt = s.substr(i, 1);
-        if (Utility::isInt(possibleInt)) {
+          i += Utility::firstCharacterIndexFinder(s.substr(i+1));
+        char possibleInt = s[i+1];
+        if (isdigit(possibleInt)) {
           throw invalid_argument(
               "Invalid expression: Ambiguous multiplication detected. Please "
               "explicitly state multiplication with an asterisk '*' between "
@@ -290,7 +272,6 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
               "closing parenthesis and a number. For example, use '(1+2)*2' "
               "instead of '(1+2)32'.");
         }
-        i--;
       }
 
       if (shouldFirstNumberBeNegative) {
@@ -307,11 +288,11 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
           "parentheses are properly closed and matched");
     }
     default: {
-      string character = s.substr(i, 1);
-      if (Utility::isInt(character)) {
+      char character = s[i];
+      if (isdigit(character)) {
         bufferString += character;
         answer = stod(bufferString);
-      } else if (character == ".") {
+      } else if (character == '.') {
         if (isFirstDecimal) {
           isFirstDecimal = false;
           if (i == (s.length() - 1) || i == 0) {
@@ -319,8 +300,8 @@ double Calculator::calculate(string s, bool shouldFirstNumberBeNegative) {
                 "Invalid expression: Decimal '.' cannot be placed at "
                 "the beginning or the end of the expression.");
           }
-          string nextChar = s.substr(i - 1, 3);
-          if (!Utility::isInt(nextChar)) {
+          string possibleInt = s.substr(i - 1, 3);
+          if (!Utility::isInt(possibleInt)) {
             throw invalid_argument(
                 "Invalid expression: Decimal points must be preceded and "
                 "followed by digits. Ensure that each decimal is part of a "

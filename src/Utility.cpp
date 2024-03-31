@@ -1,5 +1,47 @@
 #include "Utility.h"
+#include <cctype>
 #include <stdexcept>
+
+int Utility::findLastIndexExpression(std::string s) {
+  int index = 0;
+  for (int i = 0; i < s.length(); i++) {
+    if (s[i] == '(') {
+      int k = closingParenthesisFinder(s.substr(i)) + 1;
+      index += k + 1;
+      i += k;
+      if (i < (s.length() - 1)) {
+        k = firstCharacterIndexFinder(s.substr(i + 1));
+        i += k;
+        if (s[i + 1] != '^') {
+          index += k;
+          return index;
+        }
+      }
+    } else if (isdigit(s[i])) {
+      index++;
+      if (i < (s.length() - 1)) {
+        int k = firstCharacterIndexFinder(s.substr(i + 1));
+        i += k;
+        if (s[i + 1] != '^' && !isdigit(s[i + 1])) {
+          index += k;
+          return index;
+        }
+      }
+    } else {
+      index++;
+    }
+  }
+
+  return index;
+}
+
+int Utility::firstCharacterIndexFinder(std::string s) {
+  int i = 0;
+  while (i < s.length() && s[i] == ' ') {
+    i++;
+  }
+  return i;
+}
 
 int Utility::openingParenthesisFinder(std::string s) {
   int count = 0;
@@ -15,7 +57,6 @@ int Utility::openingParenthesisFinder(std::string s) {
   }
   return 100;
 }
-
 
 int Utility::expressionLastIndexFinder(std::string s) {
   int index = 0;
